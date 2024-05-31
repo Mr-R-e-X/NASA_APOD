@@ -3,17 +3,21 @@ let key = "mnU7PRdaf2gluSAkQ8xlLfohe4Jrr4B8MzEq69i7";
 let searchHistory = localStorage.getItem("searchHistory")
   ? JSON.parse(localStorage.getItem("searchHistory"))
   : [];
+
+// Data fetcher funtion
 async function fecthData(url) {
   let res = await fetch(url);
   let data = await res.json();
   return data;
 }
 
-async function getData(url) {
+// get Image of function
+async function getImageOfTheDay(url) {
   let data = await fecthData(url);
   updateUi(data);
 }
 
+// UI Updater function
 function updateUi(data) {
   let title = data?.title;
   let date = data?.date;
@@ -45,32 +49,41 @@ function updateUi(data) {
     `;
 }
 
+// Default date setter function in input tag
 function setCurrentDate() {
   let today = new Date().toISOString().split("T")[0];
   document.querySelector("#custom-date").value = today;
   document.querySelector("#custom-date").max = today;
 }
 
+// Calling The Required Functions when DOM Loaded
 document.addEventListener("DOMContentLoaded", () => {
   setCurrentDate();
   let inputDate = document.querySelector("#custom-date").value;
   let url = `https://api.nasa.gov/planetary/apod?api_key=${key}&date=${inputDate}`;
-  getData(url);
+  getImageOfTheDay(url);
   updateHistoryUi(searchHistory);
 });
 
+// Save Search History
+function saveSearch(date) {
+  if (!searchHistory.includes(date)) {
+    searchHistory.push(date);
+    localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
+    updateHistoryUi(searchHistory);
+  }
+}
+
+// Handling Custom Search
 document.querySelector("#search").addEventListener("click", (e) => {
   e.preventDefault();
   let inputDate = document.querySelector("#custom-date").value;
   let url = `https://api.nasa.gov/planetary/apod?api_key=${key}&date=${inputDate}`;
-  if (!searchHistory.includes(inputDate)) {
-    searchHistory.push(inputDate);
-    localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
-    updateHistoryUi(searchHistory);
-  }
-  getData(url);
+  saveSearch(inputDate);
+  getImageOfTheDay(url);
 });
 
+// Search History UI Updating function
 function updateHistoryUi(searchHistory) {
   let prevSearchDev = document.querySelector("#previous-search");
   if (searchHistory.length === 0) {
@@ -89,7 +102,7 @@ function updateHistoryUi(searchHistory) {
         ${searchHistory
           .map(
             (history) => `
-                <p class="bg-gray-200 text-blue-600 font-medium px-4 py-2 rounded-full my-2 shadow cursor-pointer flex items-center space-x-2 transition-all duration-200" onclick="searchFromHistory('${history}')">
+                <p class="bg-gray-200 text-blue-600 font-medium px-4 py-2 rounded-full my-2 shadow cursor-pointer flex items-center space-x-2 transition-all duration-200" onclick="addSearchToHistory('${history}')">
                     ${history}
                     <span class="text-red-600 ml-2 cursor-pointer hover:text-red-800 transition-all duration-200" onclick="removeFromHistory(event, '${history}')">X</span>
                 </p>
@@ -101,10 +114,13 @@ function updateHistoryUi(searchHistory) {
   }
 }
 
-function searchFromHistory(history) {
+// Search from history
+function addSearchToHistory(history) {
   let url = `https://api.nasa.gov/planetary/apod?api_key=${key}&date=${history}`;
-  getData(url);
+  getImageOfTheDay(url);
 }
+
+// Removing History
 function removeFromHistory(event, history) {
   event.stopPropagation();
   searchHistory = searchHistory.filter((date) => date !== history);
