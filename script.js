@@ -48,6 +48,7 @@ function updateUi(data) {
 function setCurrentDate() {
   let today = new Date().toISOString().split("T")[0];
   document.querySelector("#custom-date").value = today;
+  document.querySelector("#custom-date").max = today;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
