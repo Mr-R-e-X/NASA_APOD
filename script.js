@@ -17,7 +17,7 @@ async function getData(url) {
 function updateUi(data) {
   let title = data?.title;
   let date = data?.date;
-  let imgSrc = data?.hdurl ? data?.hdurl : data?.url;
+  let imgSrc = data?.url ? data?.url : data?.hdurl;
   let mediaType = data?.media_type;
   let mediaContent;
   if (mediaType === "video") {
